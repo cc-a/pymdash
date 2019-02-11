@@ -1,0 +1,106 @@
+mdash 3.1.1
+Fri Sep 21 20:51:51 2018
+
+[TRAJECTORY]
+file      : /home/chris/MR1/modelling/analysis/out/blah_dash.dat
+variables : 12
+frames    : 6
+
+[OPTIONS]
+data     : angles
+timestep : 1 ps
+window   : 11
+binsize  : 4
+runlen   : 3
+fmax     : 2.4
+smin     : 48
+boutlen  : 20
+smooth   : 40
+rough    : 20
+repex_fraction : 0.01
+
+[ANGLE_1]
+maxima      : -153
+states      : 1 = [-180, 180)
+
+[ANGLE_2]
+maxima      : -162
+states      : 1 = [-180, 180)
+
+[ANGLE_3]
+maxima      : -152
+states      : 1 = [-180, 180)
+
+[ANGLE_4]
+maxima      : 63
+states      : 1 = [-180, 180)
+
+[ANGLE_5]
+maxima      : -111
+states      : 1 = [-180, 180)
+
+[ANGLE_6]
+maxima      : -144, -80
+states      : 1 = [-180, -112), 2 = [-112, 68), 1 = [68, 180)
+
+[ANGLE_7]
+maxima      : 120
+states      : 1 = [-180, 180)
+
+[ANGLE_8]
+maxima      : 64
+states      : 1 = [-180, 180)
+
+[ANGLE_9]
+maxima      : 158
+states      : 1 = [-180, 180)
+
+[ANGLE_10]
+maxima      : 174
+states      : 1 = [-180, 180)
+
+[ANGLE_11]
+maxima      : 128
+states      : 1 = [-180, 180)
+
+[ANGLE_12]
+maxima      : -12, 66
+states      : 2 = [-180, -153), 1 = [-153, 27), 2 = [27, 180)
+
+[REPLICA_EXCHANGE_STATES]
+1	1 1 1 1 1 2 1 1 1 1 1 1
+2	1 1 1 1 1 1 1 1 1 1 1 2
+
+[REPLICA_EXCHANGE_STATE_DISTRIBUTION]
+State	  Frames   %Frames   Rep.Frame      RMSD
+1	       4     66.67           1      6.83
+2	       2     33.33           5      7.77
+
+[REPLICA_EXCHANGE_STATE_MEAN_ANGLES]
+1	 -159.54 -161.05 -161.17   56.74 -100.26  -86.42  123.95   69.04  169.30  171.69  110.46  -17.15
+2	 -164.29 -153.69 -148.00   65.16 -132.78 -144.98  131.95   62.21  155.42  165.33  132.84   65.27
+
+[REPLICA_EXCHANGE_STATE_STANDARD_DEVIATIONS]
+1	   12.10    6.88    8.04    5.54   12.80    9.08    6.96    9.40    4.90    2.89    4.94   11.07
+2	    7.26    0.68    7.34    2.95    0.22   17.79    0.28    6.63    9.12    4.17    4.76   11.51
+
+[REPLICA_EXCHANGE_STATE_CIRCULAR_SIMILARITY]
+	     1     2
+1	  1.00  0.82
+2	  0.82  1.00
+
+[REPLICA_EXCHANGE_STATE_COSINE_SIMILARITY]
+	     1     2
+1	  1.00  0.97
+2	  0.97  1.00
+
+[REPLICA_EXCHANGE_STATE_TRAJECTORY]
+State	Frames  Cumulative
+1	     3           3
+2	     2           5
+1	     1           6
+
+[CPU_TIME]
+Input : 0.0s
+Dash  : 0.0s
+Total : 0.0s
