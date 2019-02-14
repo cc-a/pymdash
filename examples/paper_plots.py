@@ -1,22 +1,24 @@
 import matplotlib.pyplot as plt
 import mdash
 
-with open('out/pp00_dash.dat') as f, open('out/pp00_dash.in') as f2:
+with open('data/tzd.out') as f, open('data/tzd.in') as f2:
     dash = mdash.DashOutput(f, f2)
-
-dash.reindex()
 
 fig, ax = plt.subplots()
 ax.plot([state.index for state in dash.state_trajectory], 'x')
 
-d = 2
+d = 5  # index of dihedral to plot
 N = None
 fig, ax = plt.subplots()
 dihedral = dash.dihedrals[d]
 ax.plot(dihedral.trajectory[:N])
-# ax.twinx().plot([state.index for state in dash.state_trajectory[:N]], 'k')
-# ax.twinx().plot(
-#     [state.index for state in dihedral.state_trajectory[:N]], 'k')
 ax.plot([state.mean_angles[d] for state in dash.state_trajectory[:N]], 'k')
+
+fig, ax = plt.subplots()
+ax.plot(dihedral.trajectory[:N])
+twin_ax = ax.twinx()
+twin_ax.plot(
+    [state.index for state in dihedral.state_trajectory[:N]], 'k')
+
 
 plt.show()

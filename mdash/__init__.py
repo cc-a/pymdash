@@ -4,12 +4,41 @@ import re
 
 
 class DashOutput(object):
+    """The primary class to parse and represent a dash output file
+    file.
+
+    Attributes
+    ----------
+    dihedrals : list of Dihedral objects
+      The dihedral angles provided as input to mdash
+    states : list of State objects
+      The states identified by mdash
+    state_trajectory : list of State objects
+      The state adopted by the system at each frame of the trajectory
+    options : dictionary
+      The parameters used for the dash run
+    trajectory : optional, 2d numpy.array
+      The raw trajectory data trajectory data provided as input
+      for the dash run.
+    """
     def __init__(self, dash_output_file, dash_input_file=None):
+        """
+        Arguments
+        ---------
+        dash_output_file : a file like object
+          The output file produced by the mdash executable
+        dash_input_file : optional, a file like object
+          The corresponding input file provided to the mdash executable.
+          If provided the raw trajectory data is available as attribute
+          trajectory as well as the trajectory attributes of each Dihedral.
+        """
         self.dihedrals = []
         self.states = []
         self.state_trajectory = []
         self.options = {}
         self.NullState = None
+        # Iterate through sections of the dash output files
+        # and process each according to the section content
         while True:
             title, block = self._get_next_block(dash_output_file)
             if block is None:
@@ -97,11 +126,11 @@ class DashOutput(object):
         self.NullState.dihedral_states = [NullDihedralState] * self.n_dihedrals
         self.NullState.mean_angles = [None] * self.n_dihedrals
         self.NullState.stdev_angles = [None] * self.n_dihedrals
-        self.NullState.index
 
     def combine_states(self, indices):
-        """Within the system state trajectory combine together the specified
-        states. This can be handy to """
+        """Within self.state_trajectory combine together the specified
+        states such that they appear as one state. The number of states
+        and their indices are updated accordingly."""
         i = indices[0]
         state = self.get_state(index=i)
         for index in indices[1:]:
@@ -113,6 +142,9 @@ class DashOutput(object):
         self.reindex_by_frequency()
 
     def reindex_by_frequency(self):
+        """Reassign indices to dash states in order of frequency of occurence
+        such that index 1 is the most frequenctly occuring state and so on.
+        """
         new_order = sorted(
             self.states,
             key=lambda x: self.state_trajectory.count(x), reverse=True)
@@ -120,6 +152,12 @@ class DashOutput(object):
             state.index = i
 
     def combine_states_by_similarity(self, threshold):
+        """Combine states with cosine similarity scores greater than the
+        provided threshold. The algorithm used is crude and the
+        resulting combined states may depend on the order in which
+        states are stored in self.states.
+        """
+
         i = 1
         while True:
             if i > len(self.states):
@@ -164,8 +202,38 @@ class DashOutput(object):
 class State(object):
     """This class describes all of the relevant information corresponding
     to a state of the system i.e. a unique combination of the obseverved
-    dihedral values during the simulation"""
+    dihedral states during a simulation.
+
+    Attributes
+    ----------
+    index: int
+      The unique index of this state
+    dihedral_states: list of DihedralState objects
+      The combination of dihedral states that define this dash state
+    mean_angles: numpy array of floats
+      The mean value of each Dihedral angle in this state
+    stdev_angles: numpy array of floats
+      The standard deviation of each Dihedral angle distribution in this state
+    rep_frame: int
+      The index of this state's representative frame within the trajectory
+    rep_frame_rmsd: float
+      The rmsd of this state's representative frame within the trajectory
+    circular_similarity: dict
+      The circular similarity score between this state and the State
+      provided as a key
+    cosine_similarity: dict
+      The cosine similarity score between this state and the State
+      provided as a key
+    """
     def __init__(self, line, dihedrals):
+        """
+        Arguments
+        ---------
+        line: str
+          The line from [DASH_STATES] section of  a dash output file
+        dihedrals: list of Dihedral objects
+          The Dihedral angles of the simulated system
+        """
         cols = line.split()
         self.index = int(cols[0])
         self.dihedral_states = [dih.get_state(index=int(i))
@@ -206,24 +274,45 @@ class State(object):
 
 
 class DihedralState(object):
-    def __init__(self, index, maxima, ranges):
-        self.index, self.maxima, self.ranges = index, maxima, ranges
+    """A simple class representng an observed state of a single
+    dihedral.
+
+    Attributes
+    ----------
+    index: int
+      The unique index identifying this DihedralState
+    maximum: float
+      The maximum of the dihedral frequency distribution
+    ranges: list of DihedralRange objects
+      The ranges of dihedrals values that define this state
+    """
+    def __init__(self, index, maximum, ranges):
+        """See class docstring"""
+        self.index, self.maximum, self.ranges = index, maximum, ranges
 
 
-class DihedralRange(object):
-    def __init__(self, min, max):
-        self.min, self.max = min, max
+DihedralRange = namedtuple('DihedralRange', ['min', 'max'])
 
 
 class Dihedral(object):
-    """A class representing an individually varying Dihedral angle"""
-    # DihedralState = namedtuple('DihedralState', ('index', 'maxima', 'ranges'))
-    # DihedralRange = namedtuple('DihedralRange', ('min', 'max'))
+    """A class representing an individually varying Dihedral angle.
+
+    Attributes
+    ----------
+    index: int
+      The unique index identifying this dihedral
+    states: list of DihedralState objects
+      The different states occupied by this dihedral
+    state_trajectory: list of DihedralState objects
+      The state adopted by this dihedral at each frame of the trajectory
+    trajectory: numpy array or None
+      The raw trajectory input data pertaining to this dihedral
+    """
 
     def __init__(self, title, lines):
         self.index = int(re.search('[0-9]+', title).group())
         maxima = re.search('(-?[0-9]+(, )?)+', lines[0]).group().split(',')
-        self.maxima = list(map(float, maxima))
+        # self.maxima = list(map(float, maxima))
 
         self.states = self._parse_states(lines[1], maxima)
         self.state_trajectory = []
@@ -246,7 +335,8 @@ class Dihedral(object):
 
     def state(self, angle):
         """For the provided angle return the corresponding state index
-        for this dihedral"""
+        for this dihedral.
+        """
         for state in self.states:
             for sub_range in self.states[state]:
                 if sub_range.min <= angle <= sub_range.max:
@@ -254,10 +344,11 @@ class Dihedral(object):
         raise ValueError('Could not locate state for provided angle')
 
     def get_state(self, index=None):
+        """Return the DihedralState object corresponding to the specified
+        criteria.
+        """
         for state in self.states:
             if state.index == index:
                 return state
-        raise ValueError("No DihedralState with specified values: index=%s" %
-                         index)
-
-
+        raise ValueError(
+            "No DihedralState with specified values: index=%s" % index)

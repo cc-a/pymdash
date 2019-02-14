@@ -5,7 +5,8 @@ import numpy as np
 
 class Test(unittest.TestCase):
     def test(self):
-        with open('simple_dash.out') as f, open('simple_dash.in') as f2:
+        with open('data/simple_dash.out') as f, \
+             open('data/simple_dash.in') as f2:
             dash = mdash.DashOutput(f, f2)
 
         self.assertEqual(dash.options['data'], 'angles')
