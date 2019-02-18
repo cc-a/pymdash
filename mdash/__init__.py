@@ -328,9 +328,11 @@ class Dihedral(object):
             sub_range = map(float, sub_range.split(','))
             state_ranges[int(state_index)].append(
                 DihedralRange(*sub_range))
-        for index, maximum in zip(state_ranges, maxima):
-            states.append(DihedralState(index, float(maximum),
+
+        for index in state_ranges:
+            states.append(DihedralState(index, float(maxima[index-1]),
                                         state_ranges[index]))
+
         return states
 
     def state(self, angle):

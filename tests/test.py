@@ -71,6 +71,18 @@ class Test(unittest.TestCase):
                 [dihedral.get_state(index=int(state.state_code[i]))
                  for state in dash.state_trajectory])
 
+    def test_tzd(self):
+            with open('data/tzd.out') as f, \
+                 open('data/tzd.in') as f2:
+                dash = mdash.DashOutput(f, f2)
+
+            # check that the mamixum frequency value of each dihedral
+            # state falls within the appropriate range of angles
+            for dih in dash.dihedrals:
+                for state in dih.states:
+                    self.assertTrue(any(r.min < state.maximum < r.max
+                                        for r in state.ranges))
+
     def test_reindex(self):
         dash = self.get_simple_dash()
         state1, state2, state3, state4 = dash.states
